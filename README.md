@@ -22,3 +22,5 @@ Keycloak security is now broken. Removing the annotations fixes the problem.
 
 
 
+*Confirmed on Wildfly-9.0.2 with keycloak-wildfly-adapter version 2.3.0.Final and Keycloak 2.3.0.Final*
+
