@@ -14,7 +14,7 @@
     String logoutUri = KeycloakUriBuilder.fromUri("http://localhost:8180/auth").path(ServiceUrlConstants.TOKEN_SERVICE_LOGOUT_PATH)
             .queryParam("redirect_uri", "http://localhost:8080/product-portal").build("Devoxx").toString();
     String acctUri = KeycloakUriBuilder.fromUri("http://localhost:8180/auth").path(ServiceUrlConstants.ACCOUNT_SERVICE_PATH)
-            .queryParam("referrer", "product-portal").build("Devoxx").toString();
+            .queryParam("referrer", "http://localhost:8080/product-portal").build("Devoxx").toString();
 %>
 
 <p>Goto: <a href="<%=logoutUri%>">logout</a> | <a href="<%=acctUri%>">manage acct</a></p>
