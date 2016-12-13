@@ -14,13 +14,40 @@
 	<name>Product Portal </name>
 	<description />
 
-	<repositories>
-		<repository>
-			<id>jboss</id>
-			<name>jboss repo</name>
-			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
-		</repository>
-	</repositories>
+	<properties>
+		<version.org.jboss.arquillian>1.1.5.Final</version.org.jboss.arquillian>
+		<version.org.wildfly>8.1.0.Final</version.org.wildfly>
+		<version.junit>4.11</version.junit>
+	</properties>
+
+	<!-- <repositories> -->
+	<!-- <repository> -->
+	<!-- <id>jboss</id> -->
+	<!-- <name>jboss repo</name> -->
+	<!-- <url>http://repository.jboss.org/nexus/content/groups/public/</url> -->
+	<!-- </repository> -->
+	<!-- </repositories> -->
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>org.jboss.arquillian</groupId>
+				<artifactId>arquillian-bom</artifactId>
+				<version>${version.org.jboss.arquillian}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${version.junit}</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
 
 	<dependencies>
 		<dependency>
@@ -43,10 +70,99 @@
 			<artifactId>httpclient</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!--- ARQUILLIAN -->
+
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.wildfly.arquillian</groupId> -->
+		<!-- <artifactId>wildfly-arquillian-container-managed</artifactId> -->
+		<!-- <version>1.1.0.Final</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
+
+		<dependency>
+			<groupId>org.jboss.weld</groupId>
+			<artifactId>weld-core</artifactId>
+			<version>2.3.5.Final</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.6.4</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
 		<finalName>product-portal</finalName>
+
+		<pluginManagement>
+			<plugins>
+			
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>1.7</source>
+						<target>1.7</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.17</version>
+				</plugin>
+				
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-dependency-plugin
+										</artifactId>
+										<versionRange>
+											[2.1,)
+										</versionRange>
+										<goals>
+											<goal>unpack</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 
 			<!---JAVA 1.8 -->
@@ -59,6 +175,7 @@
 				</configuration>
 			</plugin>
 
+			<!---ARQUILLIAN -->
 			<plugin>
 				<groupId>org.jboss.as.plugins</groupId>
 				<artifactId>jboss-as-maven-plugin</artifactId>
@@ -75,6 +192,8 @@
 				</configuration>
 			</plugin>
 
+
+
 		</plugins>
 	</build>
 
@@ -82,14 +201,62 @@
 	<profiles>
 		<profile>
 
-			<id>integration-tests</id>
+			<!-- Arquillian WildFly managed profile -->
+			<id>arq-wildlfy-managed</id>
 
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 
+			<dependencies>
+
+				<dependency>
+					<groupId>org.wildfly.arquillian</groupId>
+					<artifactId>wildfly-arquillian-container-managed</artifactId>
+					<version>1.1.0.Final</version>
+					<scope>test</scope>
+				</dependency>
+
+			</dependencies>
+
+			<build>
+
+				<testResources>
+					<testResource>
+						<directory>src/test/resources</directory>
+					</testResource>
+				</testResources>
+
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.wildfly</groupId>
+											<artifactId>wildfly-dist</artifactId>
+											<version>${version.org.wildfly}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+
+			</build>
 		</profile>
 	</profiles>
-
-
-
-
 
 </project>

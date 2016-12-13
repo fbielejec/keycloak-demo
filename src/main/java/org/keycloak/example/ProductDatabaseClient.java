@@ -1,4 +1,4 @@
-package org.keycloak.example.oauth;
+package org.keycloak.example;
 
 import java.util.ArrayList;
 import java.util.List;
