@@ -15,10 +15,14 @@
 	<description />
 
 	<properties>
-		<version.org.jboss.arquillian>1.1.5.Final</version.org.jboss.arquillian>
-		<version.org.wildfly>8.1.0.Final</version.org.wildfly>
+		<version.org.wildfly>9.0.2.Final</version.org.wildfly>
+		<version.keycloak.wildfly.adapter>2.3.0.Final</version.keycloak.wildfly.adapter>
+		<jboss.home>${project.build.directory}/wildfly-${version.org.wildfly}</jboss.home>
+
+		<version.org.jboss.arquillian>1.1.5.Final</version.org.jboss.arquillian>		
 		<version.junit>4.11</version.junit>
 	</properties>
+
 
 	<!-- <repositories> -->
 	<!-- <repository> -->
@@ -113,7 +117,7 @@
 
 		<pluginManagement>
 			<plugins>
-			
+
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.1</version>
@@ -126,7 +130,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.17</version>
 				</plugin>
-				
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
@@ -159,7 +163,7 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				
+
 			</plugins>
 		</pluginManagement>
 
@@ -228,18 +232,22 @@
 				</testResources>
 
 				<plugins>
+
+					<!-- UNPACK WILDFLY AND KEYCLOAK ADAPTER -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
+
 							<execution>
-								<id>unpack</id>
-								<phase>process-test-classes</phase>
+								<id>unpack-wildfly-and-keycloak-adapter</id>
+								<phase>generate-resources</phase>
 								<goals>
 									<goal>unpack</goal>
 								</goals>
 								<configuration>
 									<artifactItems>
+
 										<artifactItem>
 											<groupId>org.wildfly</groupId>
 											<artifactId>wildfly-dist</artifactId>
@@ -248,11 +256,47 @@
 											<overWrite>false</overWrite>
 											<outputDirectory>${project.build.directory}</outputDirectory>
 										</artifactItem>
+
+										<artifactItem>
+											<groupId>org.keycloak</groupId>
+											<artifactId>keycloak-wildfly-adapter-dist</artifactId>
+											<version>${version.keycloak.wildfly.adapter}</version>
+											<type>zip</type>
+											<outputDirectory>${jboss.home}</outputDirectory>
+										</artifactItem>
+
 									</artifactItems>
+								</configuration>
+							</execution>
+
+						</executions>
+					</plugin>
+
+					<!-- EXECUTE KEYCLOAK ADAPTER CLI -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>install-keycloak-adapter</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>${project.basedir}/src/test/resources/install-adapter.sh</executable>
+									<workingDirectory>${jboss.home}/bin</workingDirectory>
+									<environmentVariables>
+<!-- 										<JAVA_HOME>${app.server.java.home}</JAVA_HOME> -->
+										<JBOSS_HOME>${jboss.home}</JBOSS_HOME>
+<!-- 										<SAML_SUPPORTED>${app.server.saml.adapter.supported}</SAML_SUPPORTED> -->
+									</environmentVariables>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
+
+
 				</plugins>
 
 			</build>
